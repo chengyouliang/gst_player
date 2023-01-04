@@ -289,7 +289,7 @@ end:
     return ret;
 }
     
-#define CMD_LINE "playbin uri=%s video-sink=xvimagesink"
+#define CMD_LINE "playbin uri=%s video-sink=waylandsink"
 void _paly_thread(void)
 {
     GstStateChangeReturn ret;
@@ -299,6 +299,7 @@ void _paly_thread(void)
     sprintf(launchcmd,CMD_LINE,mediaHandle->filePath);
     LOG_INFO("%s\n",launchcmd);
     mediaHandle->pipeline = gst_parse_launch(launchcmd,NULL);
+    //  mediaHandle->pipeline = gst_parse_launch("v4l2src device=/dev/video0 ! video/x-raw,format=NV12,width=640,height=480, framerate=30/1 ! videoconvert ! waylandsink",NULL);
     if (!mediaHandle->pipeline) 
     {
         LOG_ERROR ("Not all elements could be created.\n");

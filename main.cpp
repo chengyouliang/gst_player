@@ -5,9 +5,11 @@
 
 #include <QApplication>
 #include <QTime>
+#include <QWidget>
 #include <gst/video/videooverlay.h>
 
 #include "playerwindow.h"
+
 #include "common.h"
 
 extern "C"
@@ -19,6 +21,8 @@ ST_USER_HANDLE *userHandle;
 
 void hanleCallBackEvent(CALL_BACK_EVENT_TYPE eventType, void *param);
 void *_palyer_control_thread(void* Parameter);
+gboolean video_widget_draw_cb (QWidget * widget,PlayerWindow *window);
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -26,6 +30,7 @@ int main(int argc, char *argv[])
     ST_INIT_PARAM initParam;
     WId xwinid;
     int maxWaitCount =10;
+    QWidget *videowindow;
 
     /*load qss file*/
     QFile file(":/style.qss");
@@ -88,9 +93,9 @@ int main(int argc, char *argv[])
     //play mm in QT window
     PlayerWindow *window = new PlayerWindow(&userHandle);
     window->setWindowTitle("Qt&&GStreamer Player demo");
-    window->resize(1920, 1080);
+    window->resize(1280, 720);
+    window->move(0,0);
     xwinid = window->getVideoWId();
-
     //wait playsink added
     while (NULL == userHandle->videoSink)
     {
@@ -105,13 +110,17 @@ int main(int argc, char *argv[])
     }
 
     gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY(userHandle->videoSink), xwinid);
-
     if (userHandle->videoSink)
     {
          gst_object_unref (userHandle->videoSink);
     }
 
     usleep(1);
+    videowindow = window->getVideo();
+    //QPoint p5 = videowindow->mapToGlobal(QPoint(0,0));
+    gst_video_overlay_set_render_rectangle (GST_VIDEO_OVERLAY (userHandle->videoSink),videowindow->pos().x(),videowindow->pos().y(),1280,720);
+    LOG_INFO("%s %d  %d %d %d %d\n",__FUNCTION__,__LINE__,videowindow->pos().x(),videowindow->pos().y(),videowindow->width(),videowindow->height());
+    //g_signal_connect (window->getVideo(), "draw",G_CALLBACK (video_widget_draw_cb), window);
     window->show();
 
     //init cmd queue
@@ -120,8 +129,8 @@ int main(int argc, char *argv[])
     g_mutex_init(&userHandle->queueMutex);
     g_cond_init(&userHandle->queueCond);
     cmdQueueInit(&userHandle->cmdQueue);
-
     userHandle->controlThread = g_thread_new("control_thread", _palyer_control_thread, userHandle);
+
     if (!userHandle->controlThread)
     {
         LOG_ERROR ("create control thread fail.\n");
@@ -130,6 +139,20 @@ int main(int argc, char *argv[])
 stop:
     return app.exec();
 }
+
+/* We use the "draw" callback to change the size of the sink
+ * because the "configure-event" is only sent to top-level widgets. */
+gboolean video_widget_draw_cb (QWidget * widget,PlayerWindow *window)
+{
+LOG_INFO("%s %d\n",__FUNCTION__,__LINE__);
+  gst_video_overlay_set_render_rectangle (GST_VIDEO_OVERLAY (userHandle->videoSink),widget->pos().x(),widget->pos().y(),widget->width(), widget->height());
+  /* There is no need to call gst_video_overlay_expose().
+   * The wayland compositor can always re-draw the window
+   * based on its last contents if necessary */
+
+  return FALSE;
+}
+
 void hanleCallBackEvent(CALL_BACK_EVENT_TYPE eventType, void *param)
 {
     LOG_INFO("recive event type (%d)\n", eventType);
@@ -259,7 +282,6 @@ void *_palyer_control_thread(void* Parameter)
  #include <glib.h>;
  #include <gst/gst.h>;
  #include <gst/video/videooverlay.h>;
-
  #include <QApplication>;
  #include <QTimer>;
  #include <QWidget>;
@@ -274,21 +296,25 @@ void *_palyer_control_thread(void* Parameter)
    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit ()));
 
    // prepare the pipeline
-   //mediaHandle->pipeline = gst_parse_launch("",NULL);
+
    GstElement *pipeline = gst_pipeline_new ("xvoverlay");
    GstElement *src = gst_element_factory_make ("videotestsrc", NULL);
-   GstElement *sink = gst_element_factory_make ("xvimagesink", NULL);
+   GstElement *sink = gst_element_factory_make ("waylandsink", NULL);
    gst_bin_add_many (GST_BIN (pipeline), src, sink, NULL);
    gst_element_link (src, sink);
 
    // prepare the ui
 
    QWidget window;
-   window.resize(320, 240);
+   window.setGeometry(0, 0, 320, 240); // (x, y, w, h)
+   //window.resize(320, 240);
    window.show();
 
    WId xwinid = window.winId();
    gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink), xwinid);
+   QPoint p5 = window.mapToGlobal(QPoint(0, 0));
+   gst_video_overlay_set_render_rectangle (GST_VIDEO_OVERLAY (sink),p5.x(),
+       p5.y(), window.width(), window.height());
 
    // run the pipeline
 

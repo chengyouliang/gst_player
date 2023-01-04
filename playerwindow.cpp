@@ -37,6 +37,10 @@ PlayerWindow::~PlayerWindow()
 WId PlayerWindow::getVideoWId(){
     return videoWidget->winId();
 }
+QWidget *PlayerWindow::getVideo()
+{
+    return videoWidget;
+}
 
 void PlayerWindow::resizeEvent(QResizeEvent *event)
 {

@@ -28,6 +28,7 @@ qt5_add_resources(qrc_FILES res.qrc)
 
 include_directories(${PROJECT_SOURCE_DIR}/common/)
 include_directories(${PROJECT_SOURCE_DIR}/gst/)
+include_directories(${STAGING_DIR}/use/include/gstreamer-1.0)
 #include_directories(${PROJECT_SOURCE_DIR}/libs/)
 #link_directories(${PROJECT_SOURCE_DIR}/libs/)
 #find_library (libpath mmplayer ${PROJECT_SOURCE_DIR}/libs/)

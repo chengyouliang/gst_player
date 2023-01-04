@@ -31,6 +31,7 @@ public:
     PlayerWindow(ST_USER_HANDLE **pstUserHandle);
     ~PlayerWindow();
     WId getVideoWId();
+    QWidget *getVideo();
 
 signals:
 
