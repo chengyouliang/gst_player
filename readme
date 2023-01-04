@@ -1,0 +1,1 @@
+export LD_LIBRARY_PATH=/mnt/media/rk3399_linux_release_v2.5.1_20210301/buildroot/output/rockchip_rk3399/build/gst_player-release/libs/:$LD_LIBRARY_PATH

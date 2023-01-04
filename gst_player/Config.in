@@ -1,0 +1,2 @@
+config BR2_PACKAGE_GST_PLAYER
+	bool " gst player qt"
