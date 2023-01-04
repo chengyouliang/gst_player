@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
-project(gst_player LANGUAGES CXX C)
+project(gstplayer LANGUAGES CXX C)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_PROJECT_NAME gst_player)
+set(CMAKE_PROJECT_NAME gstplayer)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,7 +39,7 @@ include_directories(${PROJECT_SOURCE_DIR}/gst/)
 #    message (STATUS "libpath library found in ${libpath}")
 #endif()
 
-add_executable(gst_player
+add_executable(gstplayer
   main.cpp
   playerwindow.cpp
   playerwindow.h
@@ -51,4 +51,4 @@ add_executable(gst_player
   ${qrc_FILES}
 )
 #target_link_libraries(gst_player PRIVATE Qt5::Widgets PkgConfig::gstreamer PkgConfig::gstreamer-video PkgConfig::gobject PkgConfig::glib mmplayer)
-target_link_libraries(gst_player PRIVATE Qt5::Widgets PkgConfig::gstreamer PkgConfig::gstreamer-video PkgConfig::gobject PkgConfig::glib)
+target_link_libraries(gstplayer PRIVATE Qt5::Widgets PkgConfig::gstreamer PkgConfig::gstreamer-video PkgConfig::gobject PkgConfig::glib)
